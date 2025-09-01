@@ -25,6 +25,9 @@ import {
   History,
   RefreshCw,
   HomeIcon,
+  ChevronDown,
+  Ticket,
+  AlertCircle,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import logo from "./images/logo.png";
@@ -158,6 +161,7 @@ const CustomerSupportUI = () => {
   const messagesEndRef = useRef(null);
   const profileDropdownRef = useRef(null);
   const [genAIAccordionOpen, setGenAIAccordionOpen] = useState(true);
+  const [accordionOpen, setAccordionOpen] = useState(true);
 
   // Initialize messages based on view mode
   useEffect(() => {
@@ -680,65 +684,57 @@ const CustomerSupportUI = () => {
                     </MetricGrid>
                   </Section>
 
-                  {/* Ticket Views */}
+                  {/* Enhanced Case Views Accordion */}
                   <Section>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        marginBottom: "0.75rem",
-                      }}
-                    >
-                      <SectionTitle>Case Views</SectionTitle>
-                      <IconButton>
-                        <Plus size={16} />
-                      </IconButton>
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "0.25rem",
-                      }}
-                    >
-                      {[
-                        {
-                          key: "all",
-                          label: "All cases",
-                          count: agentTickets.length,
-                        },
-                        {
-                          key: "open",
-                          label: "Active",
-                          count: agentTickets.filter((t) => t.status === "open")
-                            .length,
-                        },
-                        {
-                          key: "pending",
-                          label: "Engineering Review",
-                          count: agentTickets.filter(
-                            (t) => t.status === "pending"
-                          ).length,
-                        },
-                        {
-                          key: "solved",
-                          label: "Resolved",
-                          count: agentTickets.filter(
-                            (t) => t.status === "solved"
-                          ).length,
-                        },
-                      ].map((filter) => (
-                        <FilterButton
-                          key={filter.key}
-                          active={ticketFilter === filter.key}
-                          onClick={() => setTicketFilter(filter.key)}
-                        >
-                          <span>{filter.label}</span>
-                          <FilterCount>{filter.count}</FilterCount>
-                        </FilterButton>
-                      ))}
-                    </div>
+                    <AccordionContainer>
+                      <AccordionHeader 
+                        onClick={() => setAccordionOpen(!accordionOpen)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <AccordionTitle>Case Management</AccordionTitle>
+                        <AccordionIcon isOpen={accordionOpen}>
+                          <ChevronDown size={16} />
+                        </AccordionIcon>
+                      </AccordionHeader>
+                      
+                      <AccordionContent isOpen={accordionOpen}>
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'space-between', 
+                          marginBottom: '0.75rem' 
+                        }}>
+                          <span style={{ fontSize: '0.875rem', fontWeight: '500', color: currentTheme.colors.text }}>
+                            Quick Actions
+                          </span>
+                          <IconButton title="Create new case">
+                            <Plus size={16} />
+                          </IconButton>
+                        </div>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                          {[
+                            { key: 'all', label: 'All Cases', count: agentTickets.length, icon: <Ticket size={14} /> },
+                            { key: 'open', label: 'Active', count: agentTickets.filter(t => t.status === 'open').length, icon: <AlertCircle size={14} /> },
+                            { key: 'pending', label: 'In Review', count: agentTickets.filter(t => t.status === 'pending').length, icon: <Clock size={14} /> },
+                            { key: 'solved', label: 'Resolved', count: agentTickets.filter(t => t.status === 'solved').length, icon: <CheckCircle size={14} /> },
+                            { key: 'urgent', label: 'Urgent', count: agentTickets.filter(t => t.priority === 'high').length, icon: <AlertCircle size={14} /> }
+                          ].map(filter => (
+                            <FilterButton
+                              key={filter.key}
+                              active={ticketFilter === filter.key}
+                              onClick={() => setTicketFilter(filter.key)}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                {filter.icon}
+                                <span>{filter.label}</span>
+                              </div>
+                              <FilterCount>{filter.count}</FilterCount>
+                            </FilterButton>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionContainer>
                   </Section>
 
                   {/* Search */}
