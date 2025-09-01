@@ -1,132 +1,1362 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  MessageCircle, 
-  Send, 
-  Bot, 
-  User, 
-  Clock, 
-  CheckCircle, 
+import React, { useState, useEffect, useRef } from "react";
+import styled, { ThemeProvider, createGlobalStyle } from "styled-components";
+import {
+  MessageCircle,
+  Send,
+  Bot,
+  User,
+  Clock,
+  CheckCircle,
   Search,
   Zap,
   Menu,
-  Activity,
-  Database,
-  Cpu,
-  Wifi,
-  HardDrive,
-  BarChart3,
-  PlayCircle,
-  PauseCircle,
   Star,
   Settings,
   HelpCircle,
   LogOut,
-  ChevronDown
-} from 'lucide-react';
+  ChevronDown,
+  Plus,
+  Filter,
+  MoreHorizontal,
+  Phone,
+  Mail,
+  Globe,
+  FileText,
+ 
+  BookOpen,
+  MessageSquare,
+  Headphones,
+  ChevronRight,
+  Home,
+  Ticket,
+  History,
+  RefreshCw,
+} from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import logo from "./images/logo.png";
+const GlobalStyle = createGlobalStyle`
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+`;
+
+const lightTheme = {
+  colors: {
+    background: "#f9fafb",
+    text: "#111827",
+    sidebar: "#ffffff",
+    sidebarBorder: "#e5e7eb",
+    card: "#ffffff",
+    cardBorder: "#e5e7eb",
+    cardHover: "#f9fafb",
+    input: "#ffffff",
+    inputBorder: "#d1d5db",
+    secondaryText: "#6b7280",
+    header: "#ffffff",
+    headerBorder: "#e5e7eb",
+    blue50: "#eff6ff",
+    blue100: "#dbeafe",
+    blue500: "#3b82f6",
+    blue600: "#2563eb",
+    blue900: "#1e3a8a",
+    green50: "#f0fdf4",
+    green100: "#dcfce7",
+    green400: "#4ade80",
+    green500: "#22c55e",
+    green600: "#16a34a",
+    green900: "#14532d",
+    red50: "#fef2f2",
+    red100: "#fee2e2",
+    red400: "#f87171",
+    red600: "#dc2626",
+    red800: "#991b1b",
+    yellow100: "#fef3c7",
+    yellow400: "#fbbf24",
+    yellow600: "#d97706",
+    yellow800: "#92400e",
+    gray100: "#f3f4f6",
+    gray200: "#e5e7eb",
+    gray300: "#d1d5db",
+    gray400: "#9ca3af",
+    gray500: "#6b7280",
+    gray600: "#4b5563",
+    gray700: "#374151",
+    gray800: "#1f2937",
+    gray900: "#111827",
+    blue200: "#bfdbfe",
+    blue300: "#93c5fd",
+    blue400: "#60a5fa",
+    blue700: "#3b82f6",
+    blue800: "#2563eb",
+  },
+};
+
+const darkTheme = {
+  colors: {
+    background: "#0f172a",
+    text: "#f1f5f9",
+    sidebar: "#1e293b",
+    sidebarBorder: "#334155",
+    card: "#334155",
+    cardBorder: "#475569",
+    cardHover: "#475569",
+    input: "#334155",
+    inputBorder: "#475569",
+    secondaryText: "#94a3b8",
+    header: "#1e293b",
+    headerBorder: "#334155",
+    blue50: "#1e3a8a",
+    blue100: "#1e40af",
+    blue500: "#3b82f6",
+    blue600: "#2563eb",
+    blue900: "#dbeafe",
+    green50: "#14532d",
+    green100: "#166534",
+    green400: "#4ade80",
+    green500: "#22c55e",
+    green600: "#16a34a",
+    green900: "#dcfce7",
+    red50: "#991b1b",
+    red100: "#dc2626",
+    red400: "#f87171",
+    red600: "#dc2626",
+    red800: "#fee2e2",
+    yellow100: "#92400e",
+    yellow400: "#fbbf24",
+    yellow600: "#d97706",
+    yellow800: "#fef3c7",
+    gray100: "#374151",
+    gray200: "#4b5563",
+    gray300: "#6b7280",
+    gray400: "#9ca3af",
+    gray500: "#6b7280",
+    gray600: "#4b5563",
+    gray700: "#374151",
+    gray800: "#1f2937",
+    gray900: "#111827",
+    blue200: "#bfdbfe",
+    blue300: "#93c5fd",
+    blue400: "#60a5fa",
+    blue700: "#3b82f6",
+    blue800: "#2563eb",
+  },
+};
+
+// Styled Components
+const Container = styled.div`
+  height: 100vh;
+  background-color: ${(props) => props.theme.colors.background};
+  color: ${(props) => props.theme.colors.text};
+  display: flex;
+  transition: all 0.2s ease;
+`;
+
+const ViewToggle = styled.div`
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid ${(props) => props.theme.colors.cardBorder};
+  background-color: ${(props) => props.theme.colors.card};
+`;
+
+const ViewToggleButton = styled.button`
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: ${(props) => (props.active ? "#3b82f6" : "transparent")};
+  color: ${(props) =>
+    props.active ? "#ffffff" : props.theme.colors.secondaryText};
+
+  &:hover {
+    color: ${(props) => (props.active ? "#ffffff" : props.theme.colors.text)};
+  }
+`;
+
+const Sidebar = styled.div`
+  width: ${(props) => (props.open ? "20rem" : "6rem")};
+  background-color: ${(props) => props.theme.colors.sidebar};
+  border-right: 1px solid ${(props) => props.theme.colors.sidebarBorder};
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+`;
+
+const SidebarHeader = styled.div`
+  padding: 1rem;
+  border-bottom: 1px solid ${(props) => props.theme.colors.sidebarBorder};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const SidebarTitle = styled.h1`
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #3b82f6;
+`;
+
+const SidebarSubtitle = styled.p`
+  font-size: 0.875rem;
+  color: ${(props) => props.theme.colors.secondaryText};
+`;
+
+const IconButton = styled.button`
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: ${(props) => props.theme.colors.secondaryText};
+
+  &:hover {
+    background-color: ${(props) => props.theme.colors.cardHover};
+    color: ${(props) => props.theme.colors.text};
+  }
+`;
+
+const Section = styled.div`
+  padding: 1rem;
+  border-bottom: 1px solid ${(props) => props.theme.colors.sidebarBorder};
+  overflow: auto;
+`;
+
+const SectionTitle = styled.h3`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: ${(props) => props.theme.colors.text};
+  margin-bottom: 0.75rem;
+`;
+
+const QuickActionCard = styled.button`
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  background-color: ${(props) =>
+    props.primary ? props.theme.colors.blue50 : "transparent"};
+
+  &:hover {
+    background-color: ${(props) =>
+      props.primary
+        ? props.theme.colors.blue100
+        : props.theme.colors.cardHover};
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const QuickActionContent = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const QuickActionTitle = styled.div`
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: ${(props) =>
+    props.primary ? props.theme.colors.blue900 : props.theme.colors.text};
+`;
+
+const QuickActionDescription = styled.div`
+  font-size: 0.75rem;
+  color: ${(props) =>
+    props.primary ? "#3b82f6" : props.theme.colors.secondaryText};
+`;
+
+const AccountCard = styled.div`
+  background-color: ${(props) => props.theme.colors.green50};
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+`;
+
+const AccountStatus = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+`;
+
+const AccountStatusText = styled.span`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: ${(props) => props.theme.colors.green900};
+`;
+
+const AccountDescription = styled.p`
+  font-size: 0.75rem;
+  color: ${(props) => props.theme.colors.green600};
+`;
+
+const NavList = styled.nav`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const NavItem = styled.a`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background-color: ${(props) =>
+    props.active ? props.theme.colors.blue50 : "transparent"};
+  color: ${(props) =>
+    props.active
+      ? props.theme.colors.blue900
+      : props.theme.colors.secondaryText};
+
+  &:hover {
+    background-color: ${(props) => props.theme.colors.cardHover};
+    color: ${(props) => props.theme.colors.text};
+  }
+`;
+
+const MetricGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+`;
+
+const MetricCard = styled.div`
+  background-color: ${(props) =>
+    props.color === "blue"
+      ? props.theme.colors.blue50
+      : props.theme.colors.green50};
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const MetricContent = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const MetricLabel = styled.p`
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: ${(props) => (props.color === "blue" ? "#3b82f6" : "#16a34a")};
+`;
+
+const MetricValue = styled.p`
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: ${(props) =>
+    props.color === "blue"
+      ? props.theme.colors.blue900
+      : props.theme.colors.green900};
+`;
+
+const FilterButton = styled.button`
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  background-color: ${(props) =>
+    props.active ? props.theme.colors.blue100 : "transparent"};
+  color: ${(props) =>
+    props.active
+      ? props.theme.colors.blue900
+      : props.theme.colors.secondaryText};
+
+  &:hover {
+    background-color: ${(props) => props.theme.colors.cardHover};
+    color: ${(props) => props.theme.colors.text};
+  }
+`;
+
+const FilterCount = styled.span`
+  font-size: 0.75rem;
+  background-color: ${(props) => props.theme.colors.gray200};
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+  border: 1px solid ${(props) => props.theme.colors.inputBorder};
+  border-radius: 0.5rem;
+  background-color: ${(props) => props.theme.colors.input};
+  color: ${(props) => props.theme.colors.text};
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-color: #3b82f6;
+  }
+
+  &::placeholder {
+    color: ${(props) => props.theme.colors.secondaryText};
+  }
+`;
+
+const SearchWrapper = styled.div`
+  position: relative;
+
+  svg {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: ${(props) => props.theme.colors.secondaryText};
+  }
+`;
+
+const TicketCard = styled.div`
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid
+    ${(props) => (props.selected ? "#93c5fd" : props.theme.colors.cardBorder)};
+  background-color: ${(props) =>
+    props.selected ? props.theme.colors.blue50 : props.theme.colors.card};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0.75rem;
+  box-shadow: ${(props) =>
+    props.selected ? "none" : "0 1px 3px 0 rgba(0, 0, 0, 0.1)"};
+
+  &:hover {
+    background-color: ${(props) => props.theme.colors.cardHover};
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const TicketHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+`;
+
+const TicketChannelStatus = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const StatusBadge = styled.span`
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid;
+  background-color: ${(props) => {
+    switch (props.status) {
+      case "open":
+        return props.theme.colors.blue200;
+      case "pending":
+        return props.theme.colors.yellow100;
+      case "solved":
+        return props.theme.colors.green100;
+      default:
+        return props.theme.colors.gray100;
+    }
+  }};
+  color: ${(props) => {
+    switch (props.status) {
+      case "open":
+        return props.theme.colors.blue800;
+      case "pending":
+        return props.theme.colors.yellow800;
+      case "solved":
+        return props.theme.colors.green800;
+      default:
+        return props.theme.colors.gray800;
+    }
+  }};
+  border-color: ${(props) => {
+    switch (props.status) {
+      case "open":
+        return props.theme.colors.red200;
+      case "pending":
+        return props.theme.colors.yellow200;
+      case "solved":
+        return props.theme.colors.green200;
+      default:
+        return props.theme.colors.gray200;
+    }
+  }};
+`;
+
+const PriorityText = styled.span`
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: ${(props) => {
+    switch (props.priority) {
+      case "high":
+        return "#dc2626";
+      case "normal":
+        return "#3b82f6";
+      case "low":
+        return "#16a34a";
+      default:
+        return props.theme.colors.secondaryText;
+    }
+  }};
+`;
+
+const TicketSubject = styled.h4`
+  font-weight: 500;
+  color: ${(props) => props.theme.colors.text};
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+`;
+
+const TicketCustomer = styled.p`
+  font-size: 0.875rem;
+  color: ${(props) => props.theme.colors.secondaryText};
+  margin-bottom: 0.5rem;
+`;
+
+const TicketFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: ${(props) => props.theme.colors.secondaryText};
+`;
+
+const TicketTime = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+`;
+
+const TicketMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const MainContent = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+`;
+
+const Header = styled.div`
+  background-color: ${(props) => props.theme.colors.header};
+  border-bottom: 1px solid ${(props) => props.theme.colors.headerBorder};
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const AIAssistantInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const AvatarContainer = styled.div`
+  position: relative;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const StatusIndicator = styled.div`
+  position: absolute;
+  bottom: -0.25rem;
+  right: -0.25rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  border: 2px solid ${(props) => props.theme.colors.header};
+  background-color: ${(props) => (props.processing ? "#fbbf24" : "#4ade80")};
+  animation: ${(props) => (props.processing ? "pulse 2s infinite" : "none")};
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+`;
+
+const AIInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const AITitle = styled.h2`
+  font-weight: 600;
+  color: ${(props) => props.theme.colors.text};
+`;
+
+const AIStatus = styled.div`
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  gap: 0.5rem;
+`;
+
+const AIStatusDot = styled.div`
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: ${(props) => (props.processing ? "#fbbf24" : "#4ade80")};
+  animation: ${(props) => (props.processing ? "pulse 2s infinite" : "none")};
+`;
+
+const AIStatusText = styled.span`
+  font-weight: 500;
+  color: ${(props) => (props.processing ? "#d97706" : "#16a34a")};
+`;
+
+const ProfileDropdown = styled.div`
+  position: relative;
+`;
+
+const ProfileButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${(props) => props.theme.colors.cardHover};
+  }
+`;
+
+const UserAvatar = styled.div`
+  position: relative;
+  width: 2rem;
+  height: 2rem;
+  background: ${(props) =>
+    props.customer
+      ? "linear-gradient(135deg, #22c55e, #10b981)"
+      : "linear-gradient(135deg, #a855f7, #ec4899)"};
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+`;
+
+const UserStatusDot = styled.div`
+  position: absolute;
+  bottom: -0.125rem;
+  right: -0.125rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  border: 2px solid ${(props) => props.theme.colors.header};
+  background-color: #4ade80;
+`;
+
+const UserInfo = styled.div`
+  text-align: left;
+  display: none;
+
+  @media (min-width: 768px) {
+    display: block;
+  }
+`;
+
+const UserName = styled.div`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: ${(props) => props.theme.colors.text};
+`;
+
+const UserRole = styled.div`
+  font-size: 0.75rem;
+  color: ${(props) => props.theme.colors.secondaryText};
+`;
+
+const ChevronIcon = styled(ChevronDown)`
+  width: 1rem;
+  height: 1rem;
+  color: ${(props) => props.theme.colors.secondaryText};
+  transition: transform 0.2s ease;
+  transform: ${(props) => (props.open ? "rotate(180deg)" : "rotate(0deg)")};
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  right: 0;
+  margin-top: 0.5rem;
+  width: 16rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 1px solid ${(props) => props.theme.colors.cardBorder};
+  background-color: ${(props) => props.theme.colors.card};
+  z-index: 50;
+`;
+
+const DropdownHeader = styled.div`
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid ${(props) => props.theme.colors.cardBorder};
+`;
+
+const DropdownUserName = styled.div`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: ${(props) => props.theme.colors.text};
+`;
+
+const DropdownUserEmail = styled.div`
+  font-size: 0.75rem;
+  color: ${(props) => props.theme.colors.secondaryText};
+`;
+
+const DropdownUserStatus = styled.div`
+  display: flex;
+  align-items: center;
+  margin-top: 0.5rem;
+  gap: 0.5rem;
+`;
+
+const DropdownStatusDot = styled.div`
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: #4ade80;
+`;
+
+const DropdownStatusText = styled.span`
+  font-size: 0.75rem;
+  color: #16a34a;
+  font-weight: 500;
+`;
+
+const DropdownContent = styled.div`
+  padding: 0.25rem 0;
+`;
+
+const DropdownItem = styled.button`
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: ${(props) => (props.danger ? "#dc2626" : props.theme.colors.text)};
+
+  &:hover {
+    background-color: ${(props) =>
+      props.danger ? "#fef2f2" : props.theme.colors.cardHover};
+  }
+`;
+
+const DropdownDivider = styled.div`
+  border-top: 1px solid ${(props) => props.theme.colors.cardBorder};
+  margin: 0.25rem 0;
+`;
+
+const MessagesContainer = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  background-color: ${(props) => props.theme.colors.background};
+`;
+
+const MessagesWrapper = styled.div`
+  max-width: 64rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+`;
+
+const MessageRow = styled.div`
+  display: flex;
+  justify-content: ${(props) => (props.user ? "flex-end" : "flex-start")};
+`;
+
+const MessageContainer = styled.div`
+  max-width: 32rem;
+  order: ${(props) => (props.user ? "2" : "1")};
+`;
+
+const MessageHeader = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  justify-content: ${(props) => (props.user ? "flex-end" : "flex-start")};
+`;
+
+const MessageAvatar = styled.div`
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${(props) =>
+    props.user ? "#3b82f6" : "linear-gradient(135deg, #a855f7, #ec4899)"};
+  order: ${(props) => (props.user ? "2" : "1")};
+  margin: ${(props) => (props.user ? "0 0 0 0.75rem" : "0 0.75rem 0 0.5rem")};
+`;
+
+const MessageTime = styled.span`
+  font-size: 0.75rem;
+  color: ${(props) => props.theme.colors.secondaryText};
+`;
+
+const MessageBubble = styled.div`
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background-color: ${(props) =>
+    props.user ? "#3b82f6" : props.theme.colors.card};
+  color: ${(props) => (props.user ? "#ffffff" : props.theme.colors.text)};
+  border: ${(props) =>
+    props.user ? "none" : `1px solid ${props.theme.colors.cardBorder}`};
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+`;
+
+const MessageText = styled.p`
+  font-size: 0.875rem;
+  line-height: 1.5;
+`;
+
+const ConfidenceContainer = styled.div`
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid ${(props) => props.theme.colors.cardBorder};
+`;
+
+const ConfidenceRow = styled.div`
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  gap: 0.5rem;
+`;
+
+const ConfidenceLabel = styled.span`
+  color: ${(props) => props.theme.colors.secondaryText};
+`;
+
+const ConfidenceBar = styled.div`
+  flex: 1;
+  background-color: ${(props) => props.theme.colors.gray200};
+  border-radius: 9999px;
+  height: 0.5rem;
+  margin-right: 0.5rem;
+`;
+
+const ConfidenceProgress = styled.div`
+  background-color: #22c55e;
+  height: 0.5rem;
+  border-radius: 9999px;
+  width: ${(props) => props.confidence}%;
+  transition: width 0.5s ease;
+`;
+
+const ConfidenceValue = styled.span`
+  color: #16a34a;
+  font-weight: 500;
+`;
+
+const SuggestionsContainer = styled.div`
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const SuggestionButton = styled.button`
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #3b82f6;
+  border: 1px solid #93c5fd;
+  background: transparent;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #1d4ed8;
+    background-color: ${(props) => props.theme.colors.blue50};
+    border-color: #60a5fa;
+  }
+`;
+
+const TypingIndicator = styled.div`
+  display: flex;
+  justify-content: flex-start;
+`;
+
+const TypingContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const TypingAvatar = styled.div`
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const TypingBubble = styled.div`
+  background-color: ${(props) => props.theme.colors.card};
+  border: 1px solid ${(props) => props.theme.colors.cardBorder};
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+`;
+
+const TypingDots = styled.div`
+  display: flex;
+  gap: 0.25rem;
+`;
+
+const TypingDot = styled.div`
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: ${(props) => props.theme.colors.secondaryText};
+  border-radius: 50%;
+  animation: bounce 1.4s infinite ease-in-out;
+  animation-delay: ${(props) => props.delay};
+
+  @keyframes bounce {
+    0%,
+    80%,
+    100% {
+      transform: scale(0);
+    }
+    40% {
+      transform: scale(1);
+    }
+  }
+`;
+
+const InputArea = styled.div`
+  background-color: ${(props) => props.theme.colors.header};
+  border-top: 1px solid ${(props) => props.theme.colors.headerBorder};
+  padding: 1rem;
+`;
+
+const InputWrapper = styled.div`
+  max-width: 64rem;
+  margin: 0 auto;
+`;
+
+const InputRow = styled.div`
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+`;
+
+const InputContainer = styled.div`
+  flex: 1;
+`;
+
+const MessageInput = styled.textarea`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid ${(props) => props.theme.colors.inputBorder};
+  border-radius: 0.5rem;
+  background-color: ${(props) => props.theme.colors.input};
+  color: ${(props) => props.theme.colors.text};
+  font-size: 0.875rem;
+  resize: none;
+  outline: none;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-color: #3b82f6;
+  }
+
+  &::placeholder {
+    color: ${(props) => props.theme.colors.secondaryText};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const SendButton = styled.button`
+  padding: 0.75rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #2563eb;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const InputFooter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: ${(props) => props.theme.colors.secondaryText};
+`;
+
+const InputHint = styled.span``;
+
+const MetricsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+`;
+
+const AccordionContainer = styled.div`
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid ${(props) => props.theme.colors.cardBorder};
+  background-color: ${(props) => props.theme.colors.card};
+`;
+
+const AccordionHeader = styled.button`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: ${(props) =>
+    props.isOpen ? props.theme.colors.blue50 : "transparent"};
+  color: ${(props) => props.theme.colors.text};
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  &:hover {
+    background-color: ${(props) => props.theme.colors.cardHover};
+  }
+`;
+
+const AccordionTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const AccordionIcon = styled(ChevronDown)`
+  width: 1rem;
+  height: 1rem;
+  color: ${(props) => props.theme.colors.secondaryText};
+  transition: transform 0.2s ease;
+  transform: ${(props) => (props.isOpen ? "rotate(180deg)" : "rotate(0deg)")};
+`;
+
+const AccordionContent = styled.div`
+  padding: 0.75rem 1rem;
+  display: ${(props) => (props.isOpen ? "block" : "none")};
+  border-top: 1px solid ${(props) => props.theme.colors.cardBorder};
+  background-color: ${(props) => props.theme.colors.cardHover};
+`;
 
 const CustomerSupportUI = () => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      type: 'ai',
-      content: "CADENCE AI SUPPORT ENGINE INITIALIZED. Neural networks online. How may I assist you today?",
-      timestamp: new Date(Date.now() - 2000),
-      suggestions: ['System diagnostics', 'Account analysis', 'Performance metrics', 'Issue resolution']
-    }
-  ]);
-  
-  const [inputMessage, setInputMessage] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [aiProcessing, setAiProcessing] = useState(false);
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState("light");
+  const [viewMode, setViewMode] = useState("customer");
   const [systemMetrics, setSystemMetrics] = useState({
-    cpu: 23,
-    memory: 67,
-    network: 89,
-    satisfaction: 95.7,
-    responseTime: 1.2,
-    resolution: 89.3,
-    uptime: 99.9
+    responseTime: 1.8,
+    satisfaction: 96.2,
+    resolution: 87.5,
+    activeTickets: 24,
   });
-  const [ticketFilter, setTicketFilter] = useState('all');
-  const [realTimeData, setRealTimeData] = useState([]);
-  const [isMonitoring, setIsMonitoring] = useState(true);
+  const [ticketFilter, setTicketFilter] = useState("all");
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const profileDropdownRef = useRef(null);
+  const [genAIAccordionOpen, setGenAIAccordionOpen] = useState(true);
 
-  // User profile data
-  const userProfile = {
-    name: 'Sarah Mitchell',
-    email: 'sarah.mitchell@cadence.com',
-    role: 'Senior Support Agent',
-    avatar: null, // Will use initials
-    status: 'online'
+  // Initialize messages based on view mode
+  useEffect(() => {
+    if (viewMode === "customer") {
+      setMessages([
+        {
+          id: 1,
+          type: "ai",
+          content:
+            "Welcome to Customer Support with Gen-AI, powered by Cadence Online Support. I provide quick and easy support through access to Cadence Documentation, with citations linking to source documents for accuracy and traceability. I can provide either brief summaries or detailed step-by-step instructions. How can I assist with your EDA challenges today?",
+          timestamp: new Date(Date.now() - 2000),
+          suggestions: [
+            "Brief summary answer",
+            "Step-by-step instructions",
+            "Filter by product category",
+            "Access documentation",
+          ],
+        },
+      ]);
+    } else {
+      setMessages([
+        {
+          id: 1,
+          type: "ai",
+          content:
+            "Cadence Gen-AI Support Intelligence active. Powered by Cadence Online Support with full documentation access, citation linking, and precision filtering. Ready to provide both brief summaries and detailed step-by-step customer guidance. What support case requires analysis?",
+          timestamp: new Date(Date.now() - 2000),
+          suggestions: [
+            "Generate brief summary",
+            "Create step-by-step guide",
+            "Filter by product",
+            "Cite documentation",
+          ],
+        },
+      ]);
+    }
+  }, [viewMode]);
+
+  // User profiles
+  const customerProfile = {
+    name: "Dr. Alex Chen",
+    email: "a.chen@globalchip.com",
+    role: "Principal Design Engineer",
+    status: "active",
+    plan: "Cadence Enterprise Suite",
   };
 
-  const tickets = [
-    { id: 1, customer: 'John Doe', subject: 'Payment Processing Error', status: 'active', priority: 'high', lastUpdate: '2 min ago', messages: 12, severity: 'critical', progress: 75 },
-    { id: 2, customer: 'Sarah Wilson', subject: 'Product Return Request', status: 'pending', priority: 'medium', lastUpdate: '15 min ago', messages: 8, severity: 'medium', progress: 45 },
-    { id: 3, customer: 'Mike Chen', subject: 'Account Access Denied', status: 'resolved', priority: 'low', lastUpdate: '1 hour ago', messages: 5, severity: 'low', progress: 100 },
-    { id: 4, customer: 'Emma Davis', subject: 'Shipping Delay Notification', status: 'active', priority: 'high', lastUpdate: '3 min ago', messages: 15, severity: 'high', progress: 30 }
+  const agentProfile = {
+    name: "Sarah Mitchell",
+    email: "sarah.mitchell@cadence.com",
+    role: "Senior Support Engineer",
+    status: "available",
+  };
+
+  const currentProfile =
+    viewMode === "customer" ? customerProfile : agentProfile;
+
+  // Tickets data
+  const customerTickets = [
+    {
+      id: 1,
+      subject: "Virtuoso license checkout failure",
+      status: "open",
+      priority: "high",
+      created: "2 days ago",
+      lastUpdate: "2 hours ago",
+      messages: 3,
+      channel: "portal",
+    },
+    {
+      id: 2,
+      subject: "Genus synthesis performance optimization",
+      status: "solved",
+      priority: "normal",
+      created: "1 week ago",
+      lastUpdate: "3 days ago",
+      messages: 5,
+      channel: "chat",
+    },
+    {
+      id: 3,
+      subject: "Cadence AWR license renewal",
+      status: "solved",
+      priority: "normal",
+      created: "2 weeks ago",
+      lastUpdate: "2 weeks ago",
+      messages: 2,
+      channel: "email",
+    },
   ];
 
-  const aiSuggestions = [
-    "Initiating payment gateway diagnostic sequence. Analyzing transaction logs...",
-    "Return authorization protocol activated. Generating RMA token: CDN-2024-08-31-001",
-    "Account verification complete. Deploying secure credential reset to registered endpoint.",
-    "Real-time shipment tracking engaged. Carrier API synchronized. ETA recalculated."
+  const agentTickets = [
+    {
+      id: 1,
+      customer: {
+        name: "Dr. Michael Torres",
+        email: "mtorres@quantumcorp.com",
+      },
+      subject: "Innovus place & route memory issues",
+      status: "open",
+      priority: "high",
+      lastUpdate: "2 minutes ago",
+      messages: 3,
+      channel: "portal",
+      assignee: "You",
+    },
+    {
+      id: 2,
+      customer: { name: "Lisa Wang", email: "lwang@nexusemi.com" },
+      subject: "Spectre simulator convergence problems",
+      status: "pending",
+      priority: "normal",
+      lastUpdate: "15 minutes ago",
+      messages: 5,
+      channel: "chat",
+      assignee: "You",
+    },
+    {
+      id: 3,
+      customer: { name: "Robert Kim", email: "rkim@alphatech.com" },
+      subject: "PVS DRC deck customization",
+      status: "solved",
+      priority: "normal",
+      lastUpdate: "1 hour ago",
+      messages: 8,
+      channel: "phone",
+      assignee: "R&D Team",
+    },
+    {
+      id: 4,
+      customer: { name: "Dr. Emma Foster", email: "efoster@chipdesign.com" },
+      subject: "Allegro PCB constraint manager setup",
+      status: "open",
+      priority: "low",
+      lastUpdate: "3 minutes ago",
+      messages: 2,
+      channel: "email",
+      assignee: "You",
+    },
   ];
 
-  // Simulate real-time system monitoring
+  const currentTickets =
+    viewMode === "customer" ? customerTickets : agentTickets;
+
+  const customerSuggestions = [
+    "**Brief Summary:** Virtuoso license checkout resolved. Server connectivity verified to cadence.com:5280. **Citation:** [Virtuoso License Troubleshooting Guide, Section 3.2] - Would you like detailed step-by-step instructions instead?",
+    "**Step-by-Step Instructions:** 1) Stop Genus synthesis 2) Update technology libraries from /cadence/libs/updated 3) Restart with -lib_path flag 4) Verify 40% performance improvement **Citation:** [Genus Optimization Manual, Chapter 5.1.3]",
+    "**Brief Summary:** AWR license renewed successfully until 2025-12-31. License file updated automatically. **Citation:** [License Management Guide, Section 2.4] - Select 'detailed instructions' for manual license file installation.",
+    "**Root Cause Analysis:** Place & route requires 48GB+ RAM for 2.1M instance designs. **Citation:** [Innovus Memory Guidelines, Table 4-2] **Recommendation:** Enable design partitioning or upgrade system memory. Step-by-step partitioning guide available.",
+  ];
+
+  const agentSuggestions = [
+    "**Customer Analysis:** Memory constraint identified in P&R flow. Design size: 2.1M instances. **Documentation Reference:** [Innovus System Requirements, Section 4.3.1] **Recommended Solution:** System upgrade or design partitioning workflow.",
+    "**Technical Resolution:** RF circuit convergence issue traced to device models. **Citation:** [Spectre RF Simulation Guide, Chapter 8.2] **Solution Provided:** Optimized netlist with tighter integration settings. Customer can request brief summary or detailed implementation steps.",
+    "**Solution Applied:** 7nm FinFET DRC deck validated against foundry specs. **Documentation:** [PVS Custom Runset Creation, Section 6.1] **Deliverable:** Custom runset generated with citations to foundry design rules.",
+    "**Configuration Complete:** DDR5 constraint manager setup per JEDEC specifications. **Reference:** [Allegro High-Speed Design Guide, Chapter 12.4] **Documentation:** Length matching and via constraint documentation attached with step-by-step verification process.",
+  ];
+
+  const currentSuggestions =
+    viewMode === "customer" ? customerSuggestions : agentSuggestions;
+
+  // Event handlers and effects
   useEffect(() => {
-    if (!isMonitoring) return;
-
     const interval = setInterval(() => {
-      setSystemMetrics(prev => ({
-        cpu: Math.max(10, Math.min(90, prev.cpu + (Math.random() - 0.5) * 10)),
-        memory: Math.max(20, Math.min(95, prev.memory + (Math.random() - 0.5) * 8)),
-        network: Math.max(60, Math.min(99, prev.network + (Math.random() - 0.5) * 5)),
-        satisfaction: Math.max(90, Math.min(99, prev.satisfaction + (Math.random() - 0.5) * 2)),
-        responseTime: Math.max(0.8, Math.min(3.0, prev.responseTime + (Math.random() - 0.5) * 0.3)),
-        resolution: Math.max(85, Math.min(95, prev.resolution + (Math.random() - 0.5) * 3)),
-        uptime: Math.max(99.0, Math.min(100, prev.uptime + (Math.random() - 0.5) * 0.1))
+      setSystemMetrics((prev) => ({
+        responseTime: Math.max(
+          0.5,
+          Math.min(5.0, prev.responseTime + (Math.random() - 0.5) * 0.5)
+        ),
+        satisfaction: Math.max(
+          85,
+          Math.min(100, prev.satisfaction + (Math.random() - 0.5) * 2)
+        ),
+        resolution: Math.max(
+          75,
+          Math.min(95, prev.resolution + (Math.random() - 0.5) * 3)
+        ),
+        activeTickets: Math.max(
+          15,
+          Math.min(
+            50,
+            prev.activeTickets + Math.floor((Math.random() - 0.5) * 3)
+          )
+        ),
       }));
-
-      // Add real-time data points
-      const timestamp = Date.now();
-      setRealTimeData(prev => {
-        const newData = [...prev, { 
-          time: timestamp, 
-          value: Math.random() * 100,
-          cpu: systemMetrics.cpu,
-          network: systemMetrics.network 
-        }].slice(-20);
-        return newData;
-      });
-    }, 2000);
+    }, 10000);
 
     return () => clearInterval(interval);
-  }, [isMonitoring, systemMetrics.cpu, systemMetrics.network]);
+  }, []);
 
-  // Handle clicking outside profile dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target)
+      ) {
         setProfileDropdownOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const sendMessage = () => {
@@ -134,28 +1364,42 @@ const CustomerSupportUI = () => {
 
     const userMessage = {
       id: messages.length + 1,
-      type: 'user',
+      type: "user",
       content: inputMessage,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInputMessage('');
+    setMessages((prev) => [...prev, userMessage]);
+    setInputMessage("");
     setIsTyping(true);
     setAiProcessing(true);
 
-    // Simulate AI processing with realistic delay
     setTimeout(() => {
       const aiResponse = {
         id: messages.length + 2,
-        type: 'ai',
-        content: aiSuggestions[Math.floor(Math.random() * aiSuggestions.length)],
+        type: "ai",
+        content:
+          currentSuggestions[
+            Math.floor(Math.random() * currentSuggestions.length)
+          ],
         timestamp: new Date(),
-        confidence: Math.floor(Math.random() * 20) + 80,
-        processingTime: (Math.random() * 1000 + 500).toFixed(0),
-        suggestions: ['Execute solution', 'Require human oversight', 'Generate detailed report', 'Schedule follow-up']
+        confidence: Math.floor(Math.random() * 15) + 85,
+        suggestions:
+          viewMode === "customer"
+            ? [
+                "That resolves the issue!",
+                "I need additional support",
+                "Escalate to engineering",
+                "Close this session",
+              ]
+            : [
+                "Apply this solution",
+                "Requires R&D analysis",
+                "Escalate to specialist",
+                "Mark case resolved",
+              ],
       };
-      setMessages(prev => [...prev, aiResponse]);
+      setMessages((prev) => [...prev, aiResponse]);
       setIsTyping(false);
       setAiProcessing(false);
     }, Math.random() * 2000 + 1000);
@@ -167,646 +1411,633 @@ const CustomerSupportUI = () => {
 
   const handleProfileAction = (action) => {
     setProfileDropdownOpen(false);
-    // In a real app, these would navigate or trigger actual functionality
-    switch(action) {
-      case 'profile':
-        console.log('Opening profile settings...');
-        break;
-      case 'settings':
-        console.log('Opening account settings...');
-        break;
-      case 'help':
-        console.log('Opening help documentation...');
-        break;
-      case 'signout':
-        console.log('Signing out...');
-        break;
-      default:
-        break;
-    }
+    console.log(`Action: ${action}`);
   };
 
   const getUserInitials = (name) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
   };
 
-  const filteredTickets = ticketFilter === 'all' 
-    ? tickets 
-    : tickets.filter(ticket => ticket.status === ticketFilter);
+  const filteredTickets =
+    ticketFilter === "all"
+      ? currentTickets
+      : currentTickets.filter((ticket) => ticket.status === ticketFilter);
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    setTheme(theme === "dark" ? "light" : "dark");
   };
 
-  // Theme-aware color classes
-  const themeClasses = {
-    background: theme === 'dark' ? 'bg-slate-950' : 'bg-gray-50',
-    text: theme === 'dark' ? 'text-slate-100' : 'text-gray-900',
-    sidebar: theme === 'dark' ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/90 border-gray-200/50',
-    card: theme === 'dark' ? 'bg-slate-800/30 border-slate-700/50' : 'bg-white border-gray-200',
-    cardHover: theme === 'dark' ? 'hover:bg-slate-800/50 hover:border-slate-600/50' : 'hover:bg-gray-50 hover:border-gray-300',
-    input: theme === 'dark' ? 'bg-slate-800/50 border-slate-700/50 text-slate-200 placeholder-slate-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500',
-    button: theme === 'dark' ? 'bg-slate-800/50 border-slate-700/50 text-slate-300 hover:bg-slate-700/50' : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200',
-    secondaryText: theme === 'dark' ? 'text-slate-400' : 'text-gray-600',
-    accent: theme === 'dark' ? 'text-slate-300' : 'text-gray-800',
-    messagesBg: theme === 'dark' ? 'bg-gradient-to-b from-slate-950 to-slate-900' : 'bg-gradient-to-b from-gray-50 to-gray-100',
-    chatHeader: theme === 'dark' ? 'bg-slate-900/50 border-slate-800/50' : 'bg-white/90 border-gray-200/50',
-    performancePanel: theme === 'dark' ? 'bg-gradient-to-r from-slate-900/80 via-slate-800/80 to-slate-900/80 border-slate-700/50' : 'bg-gradient-to-r from-white/80 via-gray-50/80 to-white/80 border-gray-300/50'
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'active': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-      case 'pending': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-      case 'resolved': return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
-      default: return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+  const getChannelIcon = (channel) => {
+    switch (channel) {
+      case "email":
+        return <Mail size={16} />;
+      case "chat":
+        return <MessageCircle size={16} />;
+      case "phone":
+        return <Phone size={16} />;
+      case "portal":
+        return <Globe size={16} />;
+      default:
+        return <Globe size={16} />;
     }
   };
 
-  const getSeverityColor = (severity) => {
-    switch (severity) {
-      case 'critical': return 'text-red-400';
-      case 'high': return 'text-orange-400';
-      case 'medium': return 'text-yellow-400';
-      case 'low': return 'text-emerald-400';
-      default: return 'text-slate-400';
-    }
-  };
-
-  const getMetricColor = (value, type) => {
-    if (type === 'cpu' || type === 'memory') {
-      if (value > 80) return 'from-red-500 to-orange-500';
-      if (value > 60) return 'from-yellow-500 to-orange-500';
-      return 'from-emerald-500 to-teal-500';
-    }
-    return 'from-blue-500 to-cyan-500';
-  };
-
-  const MetricBar = ({ value, type, label }) => (
-    <div className="space-y-1">
-      <div className="flex justify-between text-xs">
-        <span className={`font-mono ${themeClasses.accent}`}>{label}</span>
-        <span className={`font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>{typeof value === 'number' ? value.toFixed(1) : value}%</span>
-      </div>
-      <div className={`w-full h-2 rounded-full overflow-hidden ${theme === 'dark' ? 'bg-slate-700' : 'bg-gray-300'}`}>
-        <div 
-          className={`h-full bg-gradient-to-r ${getMetricColor(value, type)} transition-all duration-1000 ease-out`}
-          style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-        ></div>
-      </div>
-    </div>
-  );
-
-  const MiniChart = ({ data }) => {
-    if (data.length < 2) return null;
-    
-    const maxValue = Math.max(...data.map(d => d.value));
-    const minValue = Math.min(...data.map(d => d.value));
-    const range = maxValue - minValue || 1;
-    
-    return (
-      <div className="h-8 flex items-end space-x-0.5">
-        {data.slice(-10).map((point, index) => {
-          const height = ((point.value - minValue) / range) * 24 + 4;
-          return (
-            <div 
-              key={index}
-              className="w-1 bg-gradient-to-t from-blue-500 to-cyan-400 rounded-sm opacity-70 transition-all duration-300"
-              style={{ height: `${height}px` }}
-            />
-          );
-        })}
-      </div>
-    );
-  };
+  const currentTheme = theme === "light" ? lightTheme : darkTheme;
 
   return (
-    <div className={`h-screen ${themeClasses.background} ${themeClasses.text} flex font-mono transition-colors duration-300`}>
-      {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-80' : 'w-25'} ${themeClasses.sidebar} backdrop-blur-xl transition-all duration-300 flex flex-col`}>
-        {/* Header */}
-        <div className={`p-4 border-b ${theme === 'dark' ? 'border-slate-800/50' : 'border-gray-200/50'} flex items-center justify-between`}>
-          {sidebarOpen && (
-            <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-teal-500 bg-clip-text text-transparent animate-pulse">
-                CADENCE AI
-              </h1>
-              <p className={`text-xs font-medium tracking-wide ${themeClasses.secondaryText}`}>SUPPORT INTELLIGENCE</p>
-            </div>
-          )}
-          <div className="flex items-center space-x-2">
-            {/* Theme Toggle */}
-            <button 
-              onClick={toggleTheme}
-              className={`p-2 rounded-md transition-all duration-200 border ${
-                theme === 'dark' 
-                  ? 'hover:bg-slate-800/50 border-slate-700/50 hover:border-slate-600/50 text-slate-400 hover:text-slate-200' 
-                  : 'hover:bg-gray-100 border-gray-300 hover:border-gray-400 text-gray-600 hover:text-gray-900'
-              }`}
-              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+    <ThemeProvider theme={currentTheme}>
+      <GlobalStyle />
+      <Container>
+        {/* View Mode Toggle */}
+        <ViewToggle>
+          <ViewToggleButton
+            active={viewMode === "customer"}
+            onClick={() => setViewMode("customer")}
+          >
+            Customer Portal
+          </ViewToggleButton>
+          <ViewToggleButton
+            active={viewMode === "agent"}
+            onClick={() => setViewMode("agent")}
+          >
+            Support Console
+          </ViewToggleButton>
+        </ViewToggle>
+
+        {/* Sidebar */}
+        <Sidebar open={sidebarOpen}>
+          {/* Header */}
+          <SidebarHeader>
+            {sidebarOpen && (
+              <div>
+                  <img src={logo} style={{width: "8rem"}}
+                   alt="Cadence Logo" />
+                <SidebarTitle>
+                  {viewMode === "customer"
+                    ? "Support Center"
+                    : "Support Dashboard"}
+                </SidebarTitle>
+                <SidebarSubtitle>
+                  {viewMode === "customer"
+                    ? "Get help and support"
+                    : "Ticket Management"}
+                </SidebarSubtitle>
+              </div>
+            )}
+            <div
+              style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
             >
-              {theme === 'dark' ? (
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-                </svg>
-              )}
-            </button>
-            <button 
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className={`p-2 rounded-md transition-all duration-200 border ${
-                theme === 'dark' 
-                  ? 'hover:bg-slate-800/50 border-slate-700/50 hover:border-slate-600/50 text-slate-400' 
-                  : 'hover:bg-gray-100 border-gray-300 hover:border-gray-400 text-gray-600'
-              }`}
-            >
-              <Menu className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {sidebarOpen && (
-          <>
-            {/* System Metrics */}
-            <div className={`p-4 border-b ${theme === 'dark' ? 'border-slate-800/50' : 'border-gray-200/50'}`}>
-              <div className="flex items-center justify-between mb-3">
-                <span className={`text-xs font-bold tracking-wider ${themeClasses.accent}`}>SYSTEM METRICS</span>
-                <button 
-                  onClick={() => setIsMonitoring(!isMonitoring)}
-                  className={`flex items-center text-xs transition-colors ${
-                    theme === 'dark' ? 'text-slate-400 hover:text-slate-200' : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  {isMonitoring ? <PauseCircle className="w-3 h-3 mr-1" /> : <PlayCircle className="w-3 h-3 mr-1" />}
-                  {isMonitoring ? 'PAUSE' : 'RESUME'}
-                </button>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <MetricBar value={systemMetrics.cpu} type="cpu" label="CPU" />
-                  <Cpu className="w-4 h-4 text-blue-400 ml-2" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <MetricBar value={systemMetrics.memory} type="memory" label="MEMORY" />
-                  <HardDrive className="w-4 h-4 text-purple-400 ml-2" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <MetricBar value={systemMetrics.network} type="network" label="NETWORK" />
-                  <Wifi className="w-4 h-4 text-emerald-400 ml-2" />
-                </div>
-              </div>
-
-              {/* Real-time Chart */}
-              <div className={`mt-3 p-2 rounded-md border ${
-                theme === 'dark' 
-                  ? 'bg-slate-800/30 border-slate-700/30' 
-                  : 'bg-gray-100/50 border-gray-300/30'
-              }`}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className={`text-xs font-medium ${themeClasses.accent}`}>REAL-TIME ACTIVITY</span>
-                  <Activity className="w-3 h-3 text-teal-400" />
-                </div>
-                <MiniChart data={realTimeData} />
-              </div>
-            </div>
-
-            {/* Quick Filters */}
-            <div className={`p-4 border-b ${theme === 'dark' ? 'border-slate-800/50' : 'border-gray-200/50'}`}>
-              <div className="flex items-center justify-between mb-3">
-                <span className={`text-xs font-bold tracking-wider ${themeClasses.accent}`}>TICKET FILTERS</span>
-              </div>
-              <div className="flex flex-wrap gap-1">
-                {['all', 'active', 'pending', 'resolved'].map(filter => (
-                  <button
-                    key={filter}
-                    onClick={() => setTicketFilter(filter)}
-                    className={`px-2 py-1 text-xs font-bold rounded border transition-all ${
-                      ticketFilter === filter
-                        ? 'bg-blue-500/30 border-blue-500/50 text-blue-300'
-                        : theme === 'dark'
-                          ? 'bg-slate-800/30 border-slate-700/30 text-slate-400 hover:text-slate-200 hover:border-slate-600/50'
-                          : 'bg-gray-100 border-gray-300 text-gray-600 hover:text-gray-900 hover:border-gray-400'
-                    }`}
-                  >
-                    {filter.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Search */}
-            <div className={`p-4 border-b ${theme === 'dark' ? 'border-slate-800/50' : 'border-gray-200/50'}`}>
-              <div className="relative">
-                <Search className={`w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 ${themeClasses.secondaryText}`} />
-                <input
-                  type="text"
-                  placeholder="Search tickets..."
-                  className={`w-full pl-10 pr-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 text-sm transition-all ${themeClasses.input}`}
-                />
-              </div>
-            </div>
-
-            {/* Tickets List */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className={`text-xs font-bold tracking-wider ${themeClasses.accent}`}>INCIDENT QUEUE</h3>
-                  <span className={`text-xs font-mono ${themeClasses.secondaryText}`}>{filteredTickets.length} TICKETS</span>
-                </div>
-                <div className="space-y-2">
-                  {filteredTickets.map((ticket) => (
-                    <div
-                      key={ticket.id}
-                      onClick={() => setSelectedTicket(ticket)}
-                      className={`p-3 rounded-md border cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
-                        selectedTicket?.id === ticket.id 
-                          ? 'border-blue-500/50 bg-blue-500/10 shadow-lg shadow-blue-500/20' 
-                          : theme === 'dark'
-                            ? 'border-slate-700/50 hover:border-slate-600/50 bg-slate-800/30 hover:bg-slate-800/50'
-                            : 'border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50 shadow-sm hover:shadow-md'
-                      }`}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className={`font-medium text-sm font-mono ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'}`}>{ticket.customer}</h4>
-                        <span className={`px-2 py-1 rounded-md text-xs font-bold border tracking-wide ${getStatusColor(ticket.status)}`}>
-                          {ticket.status.toUpperCase()}
-                        </span>
-                      </div>
-                      <p className={`text-sm mb-2 font-mono ${theme === 'dark' ? 'text-slate-300' : 'text-gray-700'}`}>{ticket.subject}</p>
-                      
-                      {/* Progress Bar */}
-                      <div className="mb-2">
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className={themeClasses.secondaryText}>PROGRESS</span>
-                          <span className={themeClasses.accent}>{ticket.progress}%</span>
-                        </div>
-                        <div className={`w-full h-1 rounded-full overflow-hidden ${theme === 'dark' ? 'bg-slate-700' : 'bg-gray-300'}`}>
-                          <div 
-                            className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 transition-all duration-1000"
-                            style={{ width: `${ticket.progress}%` }}
-                          ></div>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between items-center text-xs">
-                        <span className={`flex items-center font-mono ${themeClasses.secondaryText}`}>
-                          <Clock className="w-3 h-3 mr-1" />
-                          {ticket.lastUpdate}
-                        </span>
-                        <div className="flex items-center space-x-3">
-                          <span className={`font-bold tracking-wide ${getSeverityColor(ticket.severity)}`}>
-                            {ticket.severity.toUpperCase()}
-                          </span>
-                          <span className={`font-mono ${themeClasses.secondaryText}`}>{ticket.messages}MSG</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Chat Header */}
-        <div className={`${themeClasses.chatHeader} backdrop-blur-xl p-4`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 via-purple-500 to-teal-500 rounded-md flex items-center justify-center relative overflow-hidden">
-                <Bot className="w-5 h-5 text-white z-10" />
-                {aiProcessing && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 animate-pulse"></div>
-                )}
-                <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 ${
-                  theme === 'dark' ? 'border-slate-900' : 'border-white'
-                } ${
-                  aiProcessing ? 'bg-yellow-400 animate-pulse' : 'bg-emerald-400'
-                }`}></div>
-              </div>
-              <div className="ml-3">
-                <h2 className={`font-bold font-mono ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'}`}>AI SUPPORT ENGINE</h2>
-                <div className="flex items-center text-xs font-mono">
-                  <div className={`w-2 h-2 rounded-full mr-2 ${
-                    aiProcessing ? 'bg-yellow-400 animate-pulse' : 'bg-emerald-400 animate-pulse'
-                  }`}></div>
-                  <span className={aiProcessing ? 'text-yellow-400' : 'text-emerald-400'}>
-                    {aiProcessing ? 'PROCESSING...' : 'NEURAL NETWORK: ACTIVE'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* User Profile Dropdown */}
-            <div className="relative" ref={profileDropdownRef}>
-              <button
-                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className={`flex items-center space-x-3 p-2 rounded-md transition-all hover:scale-105 border ${
-                  theme === 'dark' 
-                    ? 'hover:bg-slate-800/50 border-slate-700/50 hover:border-slate-600/50' 
-                    : 'hover:bg-gray-100 border-gray-300 hover:border-gray-400'
-                }`}
+              <IconButton
+                onClick={toggleTheme}
+                title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
               >
-                {/* User Avatar */}
-                <div className="relative">
-                  <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-bold font-mono">
-                      {getUserInitials(userProfile.name)}
-                    </span>
-                  </div>
-                  <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 ${
-                    theme === 'dark' ? 'border-slate-900' : 'border-white'
-                  } ${
-                    userProfile.status === 'online' ? 'bg-emerald-400' : 'bg-gray-400'
-                  }`}></div>
-                </div>
-                
-                {/* User Info */}
-                <div className="text-left hidden md:block">
-                  <div className={`text-sm font-medium font-mono ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'}`}>
-                    {userProfile.name}
-                  </div>
-                  <div className={`text-xs ${themeClasses.secondaryText}`}>
-                    {userProfile.role}
-                  </div>
-                </div>
-                
-                <ChevronDown className={`w-4 h-4 transition-transform ${
-                  profileDropdownOpen ? 'rotate-180' : ''
-                } ${themeClasses.secondaryText}`} />
-              </button>
-
-              {/* Dropdown Menu */}
-              {profileDropdownOpen && (
-                <div className={`absolute right-0 mt-2 w-64 rounded-md shadow-lg backdrop-blur-xl border z-50 ${
-                  theme === 'dark' 
-                    ? 'bg-slate-800/90 border-slate-700/50' 
-                    : 'bg-white/90 border-gray-300/50'
-                }`}>
-                  {/* User Info Header */}
-                  <div className={`px-4 py-3 border-b ${
-                    theme === 'dark' ? 'border-slate-700/50' : 'border-gray-200/50'
-                  }`}>
-                    <div className={`text-sm font-medium font-mono ${theme === 'dark' ? 'text-slate-200' : 'text-gray-900'}`}>
-                      {userProfile.name}
-                    </div>
-                    <div className={`text-xs ${themeClasses.secondaryText} font-mono`}>
-                      {userProfile.email}
-                    </div>
-                    <div className="flex items-center mt-1">
-                      <div className="w-2 h-2 bg-emerald-400 rounded-full mr-2"></div>
-                      <span className="text-xs text-emerald-400 font-mono font-bold">ONLINE</span>
-                    </div>
-                  </div>
-
-                  {/* Menu Items */}
-                  <div className="py-1">
-                    <button
-                      onClick={() => handleProfileAction('profile')}
-                      className={`w-full text-left px-4 py-2 text-sm font-mono flex items-center space-x-3 transition-colors ${
-                        theme === 'dark' 
-                          ? 'hover:bg-slate-700/50 text-slate-300 hover:text-slate-100' 
-                          : 'hover:bg-gray-100 text-gray-700 hover:text-gray-900'
-                      }`}
-                    >
-                      <User className="w-4 h-4" />
-                      <span>VIEW PROFILE</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => handleProfileAction('settings')}
-                      className={`w-full text-left px-4 py-2 text-sm font-mono flex items-center space-x-3 transition-colors ${
-                        theme === 'dark' 
-                          ? 'hover:bg-slate-700/50 text-slate-300 hover:text-slate-100' 
-                          : 'hover:bg-gray-100 text-gray-700 hover:text-gray-900'
-                      }`}
-                    >
-                      <Settings className="w-4 h-4" />
-                      <span>ACCOUNT SETTINGS</span>
-                    </button>
-
-                    <button
-                      onClick={() => handleProfileAction('help')}
-                      className={`w-full text-left px-4 py-2 text-sm font-mono flex items-center space-x-3 transition-colors ${
-                        theme === 'dark' 
-                          ? 'hover:bg-slate-700/50 text-slate-300 hover:text-slate-100' 
-                          : 'hover:bg-gray-100 text-gray-700 hover:text-gray-900'
-                      }`}
-                    >
-                      <HelpCircle className="w-4 h-4" />
-                      <span>HELP & SUPPORT</span>
-                    </button>
-
-                    <div className={`border-t my-1 ${
-                      theme === 'dark' ? 'border-slate-700/50' : 'border-gray-200/50'
-                    }`}></div>
-
-                    <button
-                      onClick={() => handleProfileAction('signout')}
-                      className={`w-full text-left px-4 py-2 text-sm font-mono flex items-center space-x-3 transition-colors ${
-                        theme === 'dark' 
-                          ? 'hover:bg-red-900/20 text-red-400 hover:text-red-300' 
-                          : 'hover:bg-red-50 text-red-600 hover:text-red-700'
-                      }`}
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span>SIGN OUT</span>
-                    </button>
-                  </div>
-                </div>
-              )}
+                {theme === "dark" ? (
+                  <svg
+                    width={16}
+                    height={16}
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    width={16}
+                    height={16}
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                  </svg>
+                )}
+              </IconButton>
+              <IconButton onClick={() => setSidebarOpen(!sidebarOpen)}>
+                <Menu size={16} />
+              </IconButton>
             </div>
-          </div>
-        </div>
+          </SidebarHeader>
 
-        {/* Messages */}
-        <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${themeClasses.messagesBg}`}>
-          {messages.map((message) => (
-            <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}>
-              <div className={`max-w-xs lg:max-w-md ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
-                <div className={`flex items-center mb-2 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`w-7 h-7 rounded-md flex items-center justify-center transition-all duration-300 hover:scale-110 ${
-                    message.type === 'user' 
-                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 order-2 ml-2' 
-                      : 'bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 order-1 mr-2'
-                  }`}>
-                    {message.type === 'user' ? (
-                      <User className="w-4 h-4 text-white" />
-                    ) : (
-                      <Bot className="w-4 h-4 text-white" />
-                    )}
-                  </div>
-                  <span className={`text-xs font-mono ${themeClasses.secondaryText}`}>
-                    {message.timestamp.toLocaleTimeString()}
-                  </span>
-                </div>
-                <div className={`p-3 rounded-lg backdrop-blur-sm transition-all duration-300 hover:shadow-lg ${
-                  message.type === 'user' 
-                    ? 'bg-gradient-to-r from-blue-500/90 to-cyan-500/90 text-white border border-blue-400/30 hover:shadow-blue-500/20' 
-                    : theme === 'dark'
-                      ? 'bg-slate-800/70 border border-slate-700/50 text-slate-100 hover:shadow-slate-700/20'
-                      : 'bg-white/90 border border-gray-300/50 text-gray-900 hover:shadow-gray-300/20'
-                }`}>
-                  <p className="text-sm font-mono leading-relaxed">{message.content}</p>
-                  {message.confidence && (
-                    <div className="mt-3 space-y-2">
-                      <div className="flex items-center text-xs space-x-2">
-                        <span className={message.type === 'user' ? 'text-white/80' : themeClasses.secondaryText}>CONFIDENCE:</span>
-                        <div className={`w-20 h-1 rounded-full overflow-hidden ${
-                          message.type === 'user' ? 'bg-white/30' : theme === 'dark' ? 'bg-slate-600' : 'bg-gray-300'
-                        }`}>
-                          <div 
-                            className="h-full bg-gradient-to-r from-emerald-400 to-teal-400 transition-all duration-1000"
-                            style={{ width: `${message.confidence}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-emerald-400 font-bold">{message.confidence}%</span>
-                      </div>
-                      {message.processingTime && (
-                        <div className={`text-xs ${message.type === 'user' ? 'text-white/80' : themeClasses.secondaryText}`}>
-                          PROCESSING TIME: <span className="text-blue-400 font-bold">{message.processingTime}ms</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                {message.suggestions && (
-                  <div className="mt-2 space-y-1">
-                    {message.suggestions.map((suggestion, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleSuggestionClick(suggestion)}
-                        className="block w-full text-left px-3 py-2 text-xs text-blue-300 hover:text-blue-200 hover:bg-blue-500/20 rounded-md border border-blue-500/30 hover:border-blue-400/50 transition-all font-mono hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/10"
+          {sidebarOpen && (
+            <>
+              {viewMode === "customer" ? (
+                <>
+                  {/* Gen-AI Support Features Accordion */}
+                  <Section>
+                    <AccordionContainer>
+                      <AccordionHeader
+                        onClick={() =>
+                          setGenAIAccordionOpen(!genAIAccordionOpen)
+                        }
+                        isOpen={genAIAccordionOpen}
                       >
-                        → {suggestion}
-                      </button>
+                        <AccordionTitle>
+                          <Zap size={16} />
+                          <span>Gen-AI Support Features</span>
+                        </AccordionTitle>
+                        <AccordionIcon isOpen={genAIAccordionOpen}>
+                        </AccordionIcon>
+                      </AccordionHeader>
+
+                      <AccordionContent isOpen={genAIAccordionOpen}>
+                        <div
+                          style={{
+                            padding: "0.75rem",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "0.5rem",
+                          }}
+                        >
+                          <QuickActionCard primary>
+                            <MessageSquare size={20} color="#3b82f6" />
+                            <QuickActionContent>
+                              <QuickActionTitle primary>
+                                Access Documentation
+                              </QuickActionTitle>
+                              <QuickActionDescription primary>
+                                With citations and traceability
+                              </QuickActionDescription>
+                            </QuickActionContent>
+                          </QuickActionCard>
+                          <QuickActionCard>
+                            <BookOpen size={20} />
+                            <QuickActionContent>
+                              <QuickActionTitle>
+                                Answer Formats
+                              </QuickActionTitle>
+                              <QuickActionDescription>
+                                Brief summary or step-by-step
+                              </QuickActionDescription>
+                            </QuickActionContent>
+                          </QuickActionCard>
+                          <QuickActionCard>
+                            <Filter size={20} />
+                            <QuickActionContent>
+                              <QuickActionTitle>
+                                Product Filtering
+                              </QuickActionTitle>
+                              <QuickActionDescription>
+                                Precise category-based answers
+                              </QuickActionDescription>
+                            </QuickActionContent>
+                          </QuickActionCard>
+                        </div>
+                      </AccordionContent>
+                    </AccordionContainer>
+                  </Section>
+
+                  {/* Navigation */}
+                  <Section>
+                    <NavList>
+                      <NavItem active>
+                        <Home size={16} />
+                        <span>Gen-AI Portal</span>
+                      </NavItem>
+                      <NavItem>
+                        <FileText size={16} />
+                        <span>Documentation</span>
+                      </NavItem>
+                      <NavItem>
+                        <History size={16} />
+                        <span>My Cases</span>
+                      </NavItem>
+                      <NavItem>
+                        <Phone size={16} />
+                        <span>Technical Hotline</span>
+                      </NavItem>
+                    </NavList>
+                  </Section>
+
+                  {/* Recent Tickets */}
+                  <Section>
+                    <SectionTitle>Recent Support Cases</SectionTitle>
+                    {customerTickets.slice(0, 3).map((ticket) => (
+                      <TicketCard
+                        key={ticket.id}
+                        selected={selectedTicket?.id === ticket.id}
+                        onClick={() => setSelectedTicket(ticket)}
+                      >
+                        <TicketHeader>
+                          <StatusBadge status={ticket.status}>
+                            {ticket.status}
+                          </StatusBadge>
+                        </TicketHeader>
+                        <TicketSubject>{ticket.subject}</TicketSubject>
+                        <p
+                          style={{
+                            fontSize: "0.75rem",
+                            color: currentTheme.colors.secondaryText,
+                          }}
+                        >
+                          {ticket.lastUpdate}
+                        </p>
+                      </TicketCard>
+                    ))}
+                  </Section>
+                </>
+              ) : (
+                <>
+                  {/* Performance Overview */}
+                  <Section>
+                    <SectionTitle>Support Metrics</SectionTitle>
+                    <MetricGrid>
+                      <MetricCard color="blue">
+                        <MetricContent>
+                          <MetricLabel color="blue">Active Cases</MetricLabel>
+                          <MetricValue color="blue">
+                            {systemMetrics.activeTickets}
+                          </MetricValue>
+                        </MetricContent>
+                        <MessageCircle size={20} color="#3b82f6" />
+                      </MetricCard>
+                      <MetricCard color="green">
+                        <MetricContent>
+                          <MetricLabel color="green">
+                            Customer Success
+                          </MetricLabel>
+                          <MetricValue color="green">
+                            {systemMetrics.satisfaction.toFixed(1)}%
+                          </MetricValue>
+                        </MetricContent>
+                        <Star size={20} color="#16a34a" />
+                      </MetricCard>
+                    </MetricGrid>
+                  </Section>
+
+                  {/* Ticket Views */}
+                  <Section>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: "0.75rem",
+                      }}
+                    >
+                      <SectionTitle>Case Views</SectionTitle>
+                      <IconButton>
+                        <Plus size={16} />
+                      </IconButton>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.25rem",
+                      }}
+                    >
+                      {[
+                        {
+                          key: "all",
+                          label: "All cases",
+                          count: agentTickets.length,
+                        },
+                        {
+                          key: "open",
+                          label: "Active",
+                          count: agentTickets.filter((t) => t.status === "open")
+                            .length,
+                        },
+                        {
+                          key: "pending",
+                          label: "Engineering Review",
+                          count: agentTickets.filter(
+                            (t) => t.status === "pending"
+                          ).length,
+                        },
+                        {
+                          key: "solved",
+                          label: "Resolved",
+                          count: agentTickets.filter(
+                            (t) => t.status === "solved"
+                          ).length,
+                        },
+                      ].map((filter) => (
+                        <FilterButton
+                          key={filter.key}
+                          active={ticketFilter === filter.key}
+                          onClick={() => setTicketFilter(filter.key)}
+                        >
+                          <span>{filter.label}</span>
+                          <FilterCount>{filter.count}</FilterCount>
+                        </FilterButton>
+                      ))}
+                    </div>
+                  </Section>
+
+                  {/* Search */}
+                  <Section>
+                    <SearchWrapper>
+                      <Search size={16} />
+                      <SearchInput placeholder="Search support cases..." />
+                    </SearchWrapper>
+                  </Section>
+
+                  {/* Tickets List */}
+                  <div style={{ flex: 1, overflowY: "auto", padding: "1rem" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginBottom: "1rem",
+                      }}
+                    >
+                      <SectionTitle>
+                        {ticketFilter === "all"
+                          ? "All Support Cases"
+                          : ticketFilter === "open"
+                          ? "Active Cases"
+                          : ticketFilter === "pending"
+                          ? "Engineering Review"
+                          : ticketFilter === "solved"
+                          ? "Resolved Cases"
+                          : ticketFilter.charAt(0).toUpperCase() +
+                            ticketFilter.slice(1) +
+                            " Cases"}
+                        ({filteredTickets.length})
+                      </SectionTitle>
+                    </div>
+                    {filteredTickets.map((ticket) => (
+                      <TicketCard
+                        key={ticket.id}
+                        selected={selectedTicket?.id === ticket.id}
+                        onClick={() => setSelectedTicket(ticket)}
+                      >
+                        <TicketHeader>
+                          <TicketChannelStatus>
+                            {getChannelIcon(ticket.channel)}
+                            <StatusBadge status={ticket.status}>
+                              {ticket.status}
+                            </StatusBadge>
+                          </TicketChannelStatus>
+                          <PriorityText priority={ticket.priority}>
+                            {ticket.priority}
+                          </PriorityText>
+                        </TicketHeader>
+
+                        <TicketSubject>{ticket.subject}</TicketSubject>
+                        <TicketCustomer>{ticket.customer.name}</TicketCustomer>
+
+                        <TicketFooter>
+                          <TicketTime>
+                            <Clock size={12} />
+                            <span>{ticket.lastUpdate}</span>
+                          </TicketTime>
+                          <TicketMeta>
+                            <span>{ticket.messages} replies</span>
+                            <span>{ticket.assignee}</span>
+                          </TicketMeta>
+                        </TicketFooter>
+                      </TicketCard>
                     ))}
                   </div>
-                )}
-              </div>
-            </div>
-          ))}
-          
-          {isTyping && (
-            <div className="flex justify-start animate-fadeIn">
-              <div className="flex items-center space-x-2">
-                <div className="w-7 h-7 rounded-md bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-white" />
-                </div>
-                <div className={`rounded-lg p-3 backdrop-blur-sm border ${
-                  theme === 'dark' 
-                    ? 'bg-slate-800/70 border-slate-700/50' 
-                    : 'bg-white/90 border-gray-300/50'
-                }`}>
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+                </>
+              )}
+              {/* Account Overview */}
+              <Section>
+                <SectionTitle>Your License Status</SectionTitle>
+                <AccountCard>
+                  <AccountStatus>
+                    <AccountStatusText>
+                      Cadence Enterprise Suite
+                    </AccountStatusText>
+                    <CheckCircle size={16} color="#16a34a" />
+                  </AccountStatus>
+                  <AccountDescription>
+                    Full Gen-AI support enabled
+                  </AccountDescription>
+                </AccountCard>
+              </Section>
+            </>
           )}
-          <div ref={messagesEndRef} />
-        </div>
+        </Sidebar>
 
-        {/* AI Performance Panel */}
-        <div className={`${themeClasses.performancePanel} backdrop-blur-xl p-4`}>
-          <div className="flex items-center mb-3">
-            <Zap className="w-4 h-4 text-yellow-400 mr-2 animate-pulse" />
-            <span className={`text-xs font-bold tracking-wider ${themeClasses.accent}`}>PERFORMANCE METRICS</span>
-            <div className={`ml-auto flex items-center text-xs font-mono ${themeClasses.secondaryText}`}>
-              <BarChart3 className="w-3 h-3 mr-1" />
-              REAL-TIME
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs font-mono">
-            <div className={`flex items-center justify-between p-3 rounded-md border border-emerald-500/30 hover:border-emerald-400/50 transition-all hover:scale-105 ${
-              theme === 'dark' ? 'bg-slate-800/50' : 'bg-emerald-50/80'
-            }`}>
-              <div>
-                <span className={`block ${themeClasses.accent}`}>SATISFACTION</span>
-                <span className="text-emerald-400 font-bold text-lg">{systemMetrics.satisfaction.toFixed(1)}%</span>
-              </div>
-              <CheckCircle className="w-5 h-5 text-emerald-400" />
-            </div>
-            <div className={`flex items-center justify-between p-3 rounded-md border border-blue-500/30 hover:border-blue-400/50 transition-all hover:scale-105 ${
-              theme === 'dark' ? 'bg-slate-800/50' : 'bg-blue-50/80'
-            }`}>
-              <div>
-                <span className={`block ${themeClasses.accent}`}>RESPONSE</span>
-                <span className="text-blue-400 font-bold text-lg">{systemMetrics.responseTime.toFixed(1)}s</span>
-              </div>
-              <Clock className="w-5 h-5 text-blue-400" />
-            </div>
-            <div className={`flex items-center justify-between p-3 rounded-md border border-purple-500/30 hover:border-purple-400/50 transition-all hover:scale-105 ${
-              theme === 'dark' ? 'bg-slate-800/50' : 'bg-purple-50/80'
-            }`}>
-              <div>
-                <span className={`block ${themeClasses.accent}`}>RESOLUTION</span>
-                <span className="text-purple-400 font-bold text-lg">{systemMetrics.resolution.toFixed(1)}%</span>
-              </div>
-              <Star className="w-5 h-5 text-purple-400" />
-            </div>
-            <div className={`flex items-center justify-between p-3 rounded-md border border-orange-500/30 hover:border-orange-400/50 transition-all hover:scale-105 ${
-              theme === 'dark' ? 'bg-slate-800/50' : 'bg-orange-50/80'
-            }`}>
-              <div>
-                <span className={`block ${themeClasses.accent}`}>UPTIME</span>
-                <span className="text-orange-400 font-bold text-lg">{systemMetrics.uptime.toFixed(1)}%</span>
-              </div>
-              <Activity className="w-5 h-5 text-orange-400" />
-            </div>
-          </div>
-        </div>
+        {/* Main Content */}
+        <MainContent>
+          {/* Header */}
+          <Header>
+            <AIAssistantInfo>
+              <AvatarContainer>
+                <Bot size={20} color="white" />
+                <StatusIndicator processing={aiProcessing} />
+              </AvatarContainer>
+              <AIInfo>
+                <AITitle>
+                  {viewMode === "customer"
+                    ? "Customer Support with Gen-AI"
+                    : "Gen-AI Support Intelligence"}
+                </AITitle>
+                <AIStatus>
+                  <AIStatusDot processing={aiProcessing} />
+                  <AIStatusText processing={aiProcessing}>
+                    {aiProcessing
+                      ? "Analyzing documentation..."
+                      : "Powered by Cadence Online Support"}
+                  </AIStatusText>
+                </AIStatus>
+              </AIInfo>
+            </AIAssistantInfo>
 
-        {/* Input Area */}
-        <div className={`${themeClasses.chatHeader} backdrop-blur-xl p-4`}>
-          <div className="flex items-end space-x-3">
-            <div className="flex-1">
-              <textarea
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
-                placeholder="Enter command or query..."
-                rows={1}
-                className={`w-full p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none text-sm font-mono transition-all focus:shadow-lg focus:shadow-blue-500/20 ${themeClasses.input}`}
-                disabled={aiProcessing}
-              />
-            </div>
-            <button 
-              onClick={sendMessage}
-              className="p-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-md hover:from-blue-600 hover:to-cyan-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-blue-400/30 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/30"
-              disabled={!inputMessage.trim() || aiProcessing}
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
-          
-          <div className="flex justify-end mt-3">
-            <div className={`text-xs font-mono ${themeClasses.secondaryText}`}>
-              ENTER: SEND | SHIFT+ENTER: NEWLINE
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-      `}</style>
-    </div>
+            {/* User Profile */}
+            <ProfileDropdown ref={profileDropdownRef}>
+              <ProfileButton
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+              >
+                <UserAvatar customer={viewMode === "customer"}>
+                  <span>{getUserInitials(currentProfile.name)}</span>
+                  <UserStatusDot />
+                </UserAvatar>
+
+                <UserInfo>
+                  <UserName>{currentProfile.name}</UserName>
+                  <UserRole>{currentProfile.role}</UserRole>
+                </UserInfo>
+
+                <ChevronIcon open={profileDropdownOpen} />
+              </ProfileButton>
+
+              {profileDropdownOpen && (
+                <DropdownMenu>
+                  <DropdownHeader>
+                    <DropdownUserName>{currentProfile.name}</DropdownUserName>
+                    <DropdownUserEmail>
+                      {currentProfile.email}
+                    </DropdownUserEmail>
+                    <DropdownUserStatus>
+                      <DropdownStatusDot />
+                      <DropdownStatusText>
+                        {viewMode === "customer" ? "Licensed User" : "On Duty"}
+                      </DropdownStatusText>
+                    </DropdownUserStatus>
+                  </DropdownHeader>
+
+                  <DropdownContent>
+                    <DropdownItem
+                      onClick={() => handleProfileAction("profile")}
+                    >
+                      <User size={16} />
+                      <span>View profile</span>
+                    </DropdownItem>
+
+                    <DropdownItem
+                      onClick={() => handleProfileAction("settings")}
+                    >
+                      <Settings size={16} />
+                      <span>Settings</span>
+                    </DropdownItem>
+
+                    <DropdownItem onClick={() => handleProfileAction("help")}>
+                      <HelpCircle size={16} />
+                      <span>Help & support</span>
+                    </DropdownItem>
+
+                    <DropdownDivider />
+
+                    <DropdownItem
+                      danger
+                      onClick={() => handleProfileAction("signout")}
+                    >
+                      <LogOut size={16} />
+                      <span>Sign out</span>
+                    </DropdownItem>
+                  </DropdownContent>
+                </DropdownMenu>
+              )}
+            </ProfileDropdown>
+          </Header>
+
+          {/* Messages */}
+          <MessagesContainer>
+            <MessagesWrapper>
+              {messages.map((message) => (
+                <MessageRow key={message.id} user={message.type === "user"}>
+                  <MessageContainer user={message.type === "user"}>
+                    <MessageHeader user={message.type === "user"}>
+                      <MessageAvatar user={message.type === "user"}>
+                        {message.type === "user" ? (
+                          <User size={16} color="white" />
+                        ) : (
+                          <Bot size={16} color="white" />
+                        )}
+                      </MessageAvatar>
+                      <MessageTime>
+                        {message.timestamp.toLocaleTimeString()}
+                      </MessageTime>
+                    </MessageHeader>
+                    <MessageBubble user={message.type === "user"}>
+                      <MessageText>
+                        <ReactMarkdown>{message.content}</ReactMarkdown>
+                      </MessageText>
+                      {message.confidence && (
+                        <ConfidenceContainer>
+                          <ConfidenceRow>
+                            <ConfidenceLabel>Confidence:</ConfidenceLabel>
+                            <ConfidenceBar>
+                              <ConfidenceProgress
+                                confidence={message.confidence}
+                              />
+                            </ConfidenceBar>
+                            <ConfidenceValue>
+                              {message.confidence}%
+                            </ConfidenceValue>
+                          </ConfidenceRow>
+                        </ConfidenceContainer>
+                      )}
+                    </MessageBubble>
+                    {message.suggestions && (
+                      <SuggestionsContainer>
+                        {message.suggestions.map((suggestion, index) => (
+                          <SuggestionButton
+                            key={index}
+                            onClick={() => handleSuggestionClick(suggestion)}
+                          >
+                            {suggestion}
+                          </SuggestionButton>
+                        ))}
+                      </SuggestionsContainer>
+                    )}
+                  </MessageContainer>
+                </MessageRow>
+              ))}
+
+              {isTyping && (
+                <TypingIndicator>
+                  <TypingContainer>
+                    <TypingAvatar>
+                      <Bot size={16} color="white" />
+                    </TypingAvatar>
+                    <TypingBubble>
+                      <TypingDots>
+                        <TypingDot delay="0s" />
+                        <TypingDot delay="0.1s" />
+                        <TypingDot delay="0.2s" />
+                      </TypingDots>
+                    </TypingBubble>
+                  </TypingContainer>
+                </TypingIndicator>
+              )}
+              <div ref={messagesEndRef} />
+            </MessagesWrapper>
+          </MessagesContainer>
+
+          {/* Input Area */}
+          <InputArea>
+            <InputWrapper>
+              <InputRow>
+                <InputContainer>
+                  <MessageInput
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" &&
+                      !e.shiftKey &&
+                      (e.preventDefault(), sendMessage())
+                    }
+                    placeholder={
+                      viewMode === "customer"
+                        ? "Describe your EDA tool issue or technical question..."
+                        : "Analyze customer's technical issue for resolution..."
+                    }
+                    rows={1}
+                    disabled={aiProcessing}
+                  />
+                </InputContainer>
+                <SendButton
+                  onClick={sendMessage}
+                  disabled={!inputMessage.trim() || aiProcessing}
+                >
+                  <Send size={16} />
+                </SendButton>
+              </InputRow>
+
+              <InputFooter>
+                <InputHint>
+                  Press Enter to send, Shift+Enter for new line
+                </InputHint>
+                {viewMode === "agent" && (
+                  <MetricsRow>
+                    <span>
+                      Response time: {systemMetrics.responseTime.toFixed(1)}s
+                    </span>
+                    <span>
+                      Success rate: {systemMetrics.resolution.toFixed(1)}%
+                    </span>
+                  </MetricsRow>
+                )}
+              </InputFooter>
+            </InputWrapper>
+          </InputArea>
+        </MainContent>
+      </Container>
+    </ThemeProvider>
   );
 };
 
