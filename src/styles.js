@@ -117,7 +117,7 @@ export const darkTheme = {
 
 // Layout Components
 export const Container = styled.div`
-  height: 100vh;
+  height: 100%;
   background-color: ${(props) => props.theme.colors.background};
   color: ${(props) => props.theme.colors.text};
   display: flex;
@@ -126,8 +126,8 @@ export const Container = styled.div`
 
 export const ViewToggle = styled.div`
   position: fixed;
-  top: 1rem;
-  left: 50%;
+  top: 6em;
+  left: 70%;
   transform: translateX(-50%);
   z-index: 50;
   display: flex;
