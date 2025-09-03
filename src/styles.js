@@ -126,7 +126,6 @@ export const Container = styled.div`
 
 export const ViewToggle = styled.div`
   position: fixed;
-  top: 6em;
   left: 70%;
   transform: translateX(-50%);
   z-index: 50;
